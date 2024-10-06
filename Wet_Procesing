@@ -1,0 +1,114 @@
+%% Clear workspace
+clc; 
+clear all; 
+close all;
+
+%% Initialize EEGLAB
+eeglab;
+
+test_file = '/Users/xavieroonga/Documents/MATLAB/XaviDataWork/VisualEngagement/S01/wet/20230208_095546_S01_wet_training.csv';
+if exist(test_file, 'file') == 2
+    disp('File found!');
+else
+    disp('File not found!');
+end
+
+%% Load CSV Data for EEG
+% Replace with your correct file path
+cfg = [];
+cfg.dir = '/Users/xavieroonga/Documents/MATLAB/XaviDataWork/VisualEngagement/S01/wet/';
+csv_file = fullfile(cfg.dir, '20230208_095546_S01_wet_training.csv');
+
+% Check if the CSV file exists
+if exist(csv_file, 'file') ~= 2
+    error(['File does not exist: ' csv_file]);
+end
+
+% Display the path to the CSV file
+disp(['Loading CSV file: ', csv_file]);
+
+% Read the CSV file into a table
+dataTable = readtable(csv_file);
+
+% Display the first few rows to verify the structure
+display(head(dataTable));
+
+% Convert the table to a matrix, excluding the first column if it's non-numeric
+% We assume the first column might contain timestamps or labels
+if isnumeric(dataTable{:, 1})
+    % If the first column is numeric, we include it
+    numeric_data = table2array(dataTable);  
+else
+    % Otherwise, we exclude the first column
+    numeric_data = table2array(dataTable(:, 2:end));  
+end
+
+% Display the size of the numeric data to check the structure
+disp(size(numeric_data));
+
+% Extract the number of channels and timepoints
+[num_timepoints, chan_num] = size(numeric_data);  % Note the order for timepoints and channels
+
+% Display to check channel and timepoints info
+fprintf('Number of Channels: %d\n', chan_num);
+fprintf('Number of Timepoints: %d\n', num_timepoints);
+
+% You can now continue with your data processing
+
+%-----------
+%% Preprocessing Parameters
+erp_window = [-200 1000];   % ERP window in ms
+art_chan   = [];            % Artifactual channels (if any)
+art_window = [0 600];       % Window for artifact rejection in ms
+infinity   = true;          % Use infinity reference
+
+%% Reference the data (if needed)
+EEG = numeric_data;  % EEG data from CSV
+
+% Count the number of channels
+chan_num = size(EEG, 2);    % Number of channels
+
+%% Epoch the data (ERP windowing)
+% Extracting trigger events (last column) as a numeric array
+trigger_events = table2array(dataTable(:, end));  % Ensure this is a numeric array
+
+% Create a logical index for epochs based on the trigger events
+rest_epochs = find(trigger_events == 1);  % Logical index for rest condition
+test_epochs = find(trigger_events == 2);  % Logical index for test condition
+
+% Preallocate arrays for epoched data
+epoched_rest = [];
+epoched_test = [];
+
+% Iterate through the rest epochs to extract data
+for i = 1:length(rest_epochs)
+    start_idx = rest_epochs(i) + round(erp_window(1) / 1000 * 250);  % Convert ms to samples
+    end_idx = rest_epochs(i) + round(erp_window(2) / 1000 * 250);
+    if start_idx > 0 && end_idx <= num_timepoints
+        epoched_rest(:,:,i) = EEG(start_idx:end_idx, 1:chan_num);
+    end
+end
+
+% Iterate through the test epochs to extract data
+for i = 1:length(test_epochs)
+    start_idx = test_epochs(i) + round(erp_window(1) / 1000 * 250);
+    end_idx = test_epochs(i) + round(erp_window(2) / 1000 * 250);
+    if start_idx > 0 && end_idx <= num_timepoints
+        epoched_test(:,:,i) = EEG(start_idx:end_idx, 1:chan_num);
+    end
+end
+
+%% Plotting ERP for Channels of Interest
+% Assuming ploterp function is defined elsewhere in your code
+ploterp(epoched_rest, art_chan, erp_window);
+ploterp(epoched_test, art_chan, erp_window);
+
+%% Plot Topography (Optional)
+% Assuming plottopo function is defined elsewhere in your code
+plottopo(epoched_rest, 1:chan_num, erp_window);
+plottopo(epoched_test, 1:chan_num, erp_window);
+
+%% Save Results (Optional)
+% Save ERP data or images of plots if needed
+
+disp('YEHAAAAAAAAA.');
