@@ -1,7 +1,5 @@
-# main.py
-
 import mne
-import matplotlib.pyplot as plt  # Import matplotlib
+import matplotlib.pyplot as plt
 
 from data_acquisition import load_eeg_data
 from preprocessing import preprocess_eeg, remove_artifacts
@@ -9,7 +7,7 @@ from feature_extraction import extract_band_powers
 
 def main():
     # Step 1: Data Acquisition
-    eeg_file_path = "8-16.set"  # Replace with your actual path
+    eeg_file_path = "8-16.set" 
     raw = load_eeg_data(eeg_file_path)
     
     # Step 2: Preprocessing

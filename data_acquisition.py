@@ -1,5 +1,3 @@
-# data_acquisition.py
-
 import mne
 
 def load_eeg_data(file_path):

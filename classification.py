@@ -1,5 +1,3 @@
-# classification.py
-
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 

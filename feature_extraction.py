@@ -1,5 +1,3 @@
-# feature_extraction.py
-
 import numpy as np
 from mne.time_frequency import psd_array_welch
 

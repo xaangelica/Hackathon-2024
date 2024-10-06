@@ -1,5 +1,3 @@
-# preprocessing.py
-
 import mne
 from mne.preprocessing import ICA
 
